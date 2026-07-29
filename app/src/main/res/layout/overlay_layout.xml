@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/overlayRoot"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#AA000000"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/elixirText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:text="Elixir (est.): 5.0" />
+
+    <TextView
+        android:id="@+id/confidenceText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#CCCCCC"
+        android:textSize="10sp"
+        android:text="Confidence: --" />
+
+    <TextView
+        android:id="@+id/lastPlayedText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
+        android:textSize="11sp"
+        android:layout_marginTop="4dp"
+        android:text="Last 4: --" />
+
+    <TextView
+        android:id="@+id/predictedText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#7CFC00"
+        android:textSize="11sp"
+        android:text="Likely next: --" />
+
+    <!-- Small drag handle: only this view accepts touch, so the rest of the
+         overlay can stay click-through over the game -->
+    <View
+        android:id="@+id/dragHandle"
+        android:layout_width="match_parent"
+        android:layout_height="14dp"
+        android:layout_marginTop="4dp"
+        android:background="#555555" />
+
+</LinearLayout>

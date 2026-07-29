@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Clash Tracker</string>
+    <string name="notification_channel_name">Clash Tracker Overlay</string>
+    <string name="notification_text">Tracking active — tap to stop</string>
+</resources>
