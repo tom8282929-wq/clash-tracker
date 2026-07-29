@@ -25,6 +25,7 @@ class CardDetector(private val context: Context) {
 
     companion object {
         const val MATCH_THRESHOLD = 0.75
+        private val IMAGE_EXTENSIONS = listOf(".png", ".jpg", ".jpeg")
     }
 
     private val templates: MutableMap<String, Mat> = mutableMapOf()
@@ -33,9 +34,16 @@ class CardDetector(private val context: Context) {
         val templateDir = "templates"
         val files = context.assets.list(templateDir) ?: return
         for (fileName in files) {
+            // Skip non-image files (e.g. the templates/README.txt placeholder)
+            if (IMAGE_EXTENSIONS.none { fileName.endsWith(it, ignoreCase = true) }) {
+                continue
+            }
+
             val cardName = fileName.substringBeforeLast(".")
             context.assets.open("$templateDir/$fileName").use { stream ->
                 val bmp = android.graphics.BitmapFactory.decodeStream(stream)
+                if (bmp == null) return@use // defensively skip unreadable images
+
                 val mat = Mat()
                 Utils.bitmapToMat(bmp, mat)
                 Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB)
