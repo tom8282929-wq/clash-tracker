@@ -51,6 +51,17 @@ class MainActivity : AppCompatActivity() {
                 statusText.text = "Grant the overlay permission, then tap the button again"
                 return@setOnClickListener
             }
+
+            if (!ForegroundAppChecker.hasUsageAccess(this)) {
+                startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                statusText.text =
+                    "Find \"Clash Tracker\" in the list and enable usage access, " +
+                    "then come back and tap the button again. This is what lets " +
+                    "the app tell when Clash Royale is actually open, so it never " +
+                    "runs anywhere else."
+                return@setOnClickListener
+            }
+
             requestScreenCapture()
         }
     }
