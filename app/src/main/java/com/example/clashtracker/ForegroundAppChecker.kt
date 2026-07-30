@@ -6,13 +6,11 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.os.Process
 
-/**
- * Checks whether Clash Royale is the app currently in the foreground, so
- * the tracker only ever captures/ticks while the actual game is open —
- * never while you're in another app, a menu, or the tracker itself.
- */
 object ForegroundAppChecker {
     const val CLASH_ROYALE_PACKAGE = "com.supercell.clashroyale"
+
+    private var lastQueryTime = 0L
+    private var currentForegroundPackage: String? = null
 
     fun hasUsageAccess(context: Context): Boolean {
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
@@ -24,19 +22,27 @@ object ForegroundAppChecker {
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
-    fun isClashRoyaleForeground(context: Context): Boolean {
+    private fun refresh(context: Context) {
         val usageStatsManager =
             context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val now = System.currentTimeMillis()
-        val events = usageStatsManager.queryEvents(now - 10_000, now)
-        var lastPackage: String? = null
+        // Query only NEW events since the last check, instead of a fixed
+        // trailing window — otherwise a long, uninterrupted session in one
+        // app eventually falls outside a fixed window and looks "idle".
+        val start = if (lastQueryTime == 0L) now - 10_000 else lastQueryTime
+        val events = usageStatsManager.queryEvents(start, now)
         val event = UsageEvents.Event()
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
             if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
-                lastPackage = event.packageName
+                currentForegroundPackage = event.packageName
             }
         }
-        return lastPackage == CLASH_ROYALE_PACKAGE
+        lastQueryTime = now
+    }
+
+    fun isClashRoyaleForeground(context: Context): Boolean {
+        refresh(context)
+        return currentForegroundPackage == CLASH_ROYALE_PACKAGE
     }
 }
