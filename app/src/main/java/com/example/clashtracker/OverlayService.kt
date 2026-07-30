@@ -6,7 +6,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
 import android.graphics.Rect
-import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.ImageReader
 import android.media.projection.MediaProjection
@@ -32,13 +31,9 @@ class OverlayService : Service() {
         const val NOTIFICATION_CHANNEL_ID = "clash_tracker_channel"
         const val NOTIFICATION_ID = 1001
 
-        // TODO: calibrate this per your device's resolution — this is the
-        // region of the screen where the opponent's "just played" card
-        // slot appears. Placeholder values assume a 1080x2400-ish portrait
-        // capture; adjust after checking captured frames on your device.
         val CAPTURE_REGION = Rect(400, 600, 700, 900)
 
-        const val PROCESS_INTERVAL_MS = 350L // ~2-3 fps
+        const val PROCESS_INTERVAL_MS = 350L
         const val UI_TICK_MS = 250L
     }
 
@@ -67,8 +62,7 @@ class OverlayService : Service() {
     override fun onCreate() {
         super.onCreate()
         if (!OpenCVLoader.initLocal()) {
-            // OpenCV failed to load — detection will no-op. Check the
-            // OpenCV Android SDK setup instructions in the README.
+            // OpenCV failed to load — detection will no-op.
         }
         CardDatabase.load(this)
         cardDetector = CardDetector(this)
@@ -114,6 +108,13 @@ class OverlayService : Service() {
         )
 
         imageReader?.setOnImageAvailableListener({ reader ->
+            // Gate everything on Clash Royale actually being the foreground
+            // app — if it isn't, drop the frame without running detection.
+            if (!ForegroundAppChecker.isClashRoyaleForeground(this)) {
+                reader.acquireLatestImage()?.close()
+                return@setOnImageAvailableListener
+            }
+
             val now = System.currentTimeMillis()
             if (now - lastProcessedMs < PROCESS_INTERVAL_MS) {
                 reader.acquireLatestImage()?.close()
@@ -166,8 +167,13 @@ class OverlayService : Service() {
     private fun startUiTickLoop() {
         uiHandler.post(object : Runnable {
             override fun run() {
-                elixirTracker.tick()
-                updateOverlayText()
+                val inGame = ForegroundAppChecker.isClashRoyaleForeground(this@OverlayService)
+                if (inGame) {
+                    elixirTracker.tick()
+                    updateOverlayText()
+                } else {
+                    showPausedText()
+                }
                 uiHandler.postDelayed(this, UI_TICK_MS)
             }
         })
@@ -180,6 +186,13 @@ class OverlayService : Service() {
         lastPlayedText.text = "Last 4: ${if (last4.isEmpty()) "--" else last4.joinToString(", ")}"
         val next = cycleTracker.likelyNext()
         predictedText.text = "Likely next: ${if (next.isEmpty()) "--" else next.joinToString(", ")}"
+    }
+
+    private fun showPausedText() {
+        elixirText.text = "Paused — waiting for Clash Royale"
+        confidenceText.text = ""
+        lastPlayedText.text = ""
+        predictedText.text = ""
     }
 
     private fun createOverlayView() {
@@ -206,8 +219,6 @@ class OverlayService : Service() {
             PixelFormat.TRANSLUCENT
         )
         overlayParams.gravity = Gravity.TOP or Gravity.START
-        // Small inset from the top-left corner of the screen, clear of
-        // notches/status bars. Adjust if your device has a large cutout.
         overlayParams.x = 24
         overlayParams.y = 80
 
@@ -215,11 +226,6 @@ class OverlayService : Service() {
         windowManager.addView(overlayView, overlayParams)
     }
 
-    /**
-     * The overlay is FLAG_NOT_TOUCHABLE by default so it never steals game
-     * input. Long-press the drag handle strip to temporarily unlock and
-     * reposition; it re-locks automatically when you lift your finger.
-     */
     private fun setupDragHandle() {
         val handle = overlayView.findViewById<View>(R.id.dragHandle)
         var initialX = 0
