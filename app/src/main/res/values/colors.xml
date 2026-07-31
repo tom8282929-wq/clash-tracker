@@ -1,0 +1,8 @@
+<resources>
+    <color name="background_dark">#14141C</color>
+    <color name="surface_dark">#1F1F2E</color>
+    <color name="surface_border">#3A3A50</color>
+    <color name="accent_red">#FF3B30</color>
+    <color name="text_primary">#F5F5FA</color>
+    <color name="text_secondary">#9A9AB0</color>
+</resources>
