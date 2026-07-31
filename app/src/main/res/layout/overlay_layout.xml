@@ -4,15 +4,26 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="#AA000000"
-    android:padding="8dp">
+    android:background="@drawable/overlay_background"
+    android:padding="10dp"
+    android:minWidth="180dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CLASH TRACKER"
+        android:textColor="@color/text_secondary"
+        android:textSize="9sp"
+        android:letterSpacing="0.1"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp" />
 
     <TextView
         android:id="@+id/elixirText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#FFFFFF"
-        android:textSize="14sp"
+        android:textColor="@color/accent_red"
+        android:textSize="16sp"
         android:textStyle="bold"
         android:text="Elixir (est.): 5.0" />
 
@@ -20,7 +31,7 @@
         android:id="@+id/confidenceText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#CCCCCC"
+        android:textColor="@color/text_secondary"
         android:textSize="10sp"
         android:text="Confidence: --" />
 
@@ -28,26 +39,24 @@
         android:id="@+id/lastPlayedText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/text_primary"
         android:textSize="11sp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="6dp"
         android:text="Last 4: --" />
 
     <TextView
         android:id="@+id/predictedText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#7CFC00"
+        android:textColor="#7CFC7C"
         android:textSize="11sp"
         android:text="Likely next: --" />
 
-    <!-- Small drag handle: only this view accepts touch, so the rest of the
-         overlay can stay click-through over the game -->
     <View
         android:id="@+id/dragHandle"
         android:layout_width="match_parent"
-        android:layout_height="14dp"
-        android:layout_marginTop="4dp"
-        android:background="#555555" />
+        android:layout_height="12dp"
+        android:layout_marginTop="6dp"
+        android:background="@color/surface_border" />
 
 </LinearLayout>
